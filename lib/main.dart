@@ -12,16 +12,16 @@ extension Log on Object {
 
 void main() {
   runApp(
-    BlocProvider(
-      create: (context) => PersonsBloc(),
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorSchemeSeed: Colors.purple,
-        ),
-        debugShowCheckedModeBanner: false,
-        home: const HomePage(),
+    MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.purple,
+      ),
+      debugShowCheckedModeBanner: false,
+      home: BlocProvider(
+        create: (_) => PersonsBloc(),
+        child: const HomePage(),
       ),
     ),
   );
@@ -47,26 +47,31 @@ extension UrlString on PersonUrl {
   String get urlString {
     switch (this) {
       case PersonUrl.persons1:
-        return 'http://127.0.0.1:5500/api/persons1.json';
+        return 'https://dummyjson.com/users';
       case PersonUrl.persons2:
-        return 'http://127.0.0.1:5500/api/persons2.json';
+        return 'https://dummyjson.com/users';
     }
   }
 }
 
 @immutable
 class Person {
-  final String name;
+  final String firstName;
+  final String lastName;
   final int age;
+  final String email;
 
-  const Person({
-    required this.name,
-    required this.age,
-  });
+  const Person(
+      {required this.firstName,
+      required this.lastName,
+      required this.age,
+      required this.email});
 
   Person.fromJson(Map<String, dynamic> json)
-      : name = json['name'] as String,
-        age = json['age'] as int;
+      : firstName = json['firstName'] as String,
+        age = json['age'] as int,
+        lastName = json['lastName'] as String,
+        email = json['email'] as String;
 }
 
 Future<Iterable<Person>> getPersons(String url) {
@@ -74,7 +79,7 @@ Future<Iterable<Person>> getPersons(String url) {
       .getUrl(Uri.parse(url))
       .then((req) => req.close())
       .then((res) => res.transform(utf8.decoder).join())
-      .then((str) => json.decode(str) as List<dynamic>)
+      .then((str) => json.decode(str)['users'] as List<dynamic>)
       .then((list) => list.map<Person>((e) => Person.fromJson(e)));
 }
 
@@ -172,7 +177,7 @@ class HomePage extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final person = persons[index];
                       return ListTile(
-                        title: Text(person?.name ?? ""),
+                        title: Text(person?.firstName ?? ""),
                       );
                     },
                   ),
